@@ -4,21 +4,29 @@
 #include <windows.h>
 #include <cctype>
 #include <fstream>
+#include <ctime>
+
+#include "Slovar.h"
 
 using namespace std;
-int StrToInt(string str)
+int StrToInt(const string& str)
 {
-	int num = 1;
+	int num = 0;
+	for (int i = 0; i < str.length(); ++i) 
+	{
+		num += (static_cast<int>(str[i] - '0'))*pow(10, (str.length() - 1 - i));
+	}
 	return num;
 }
-void toLower(basic_string<char>& s) {
-	for (basic_string<char>::iterator p = s.begin(); p != s.end(); ++p) {
-		*p = tolower(*p);
+void toLower(string& s) {
+	for (int i = 0; i < s.length(); ++i) {
+		s[i] = tolower(s[i]); // tolower is for char
 	}
 }
-void toUpper(basic_string<char>& s) {
-	for (basic_string<char>::iterator p = s.begin();p != s.end(); ++p) {
-		*p = toupper(*p); // toupper is for char
+
+void toUpper(string& s) {
+	for (int i = 0; i < s.length(); ++i) {
+		s[i] = toupper(s[i]); // toupper is for char
 	}
 }
 
@@ -28,47 +36,59 @@ int main(int argc, char const *argv[])
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
 
-	string str{ "Hello World!" };
-	int num;
-	num = StrToInt(str);
-	cout << "num = " << num << endl;
+	srand(time(NULL));
 
+	Slovar x;
 
+	string str;
+	string key, equal;
+	ifstream in;
+	in.open("FileOut.txt");
+	map <string, string> book;
+	int k = 0;
+	while (in)
+	{
+	getline(in, key);
+	getline(in, equal);
+	book.insert(make_pair(key, equal));
+	k++;
+	}
+	k--;
 
+	bool f{ true };
+	int* right = new int[k];
+	memset(right, 0, k*sizeof(*right));
+	int rnum = 0;
 
+	map <string, string>::iterator it;
+	do{
+		it = book.begin();
+		rnum = (rand() % k);
+		for (int i = 0; i < rnum; ++i) 
+			it++;
 
-	//string str;
-	//string key, equal;
-	//ifstream in;
-	//in.open("FileOut.txt");
-	//map <string, string> book;
-	//int n = 10;
-	//string num;
-	//int k;
+		cout << "Переведите : " << it->first << ':';
+		cin >> str;
+		toLower(str);
+		if (str == it->second)
+		{
+			right[rnum]++;
+			cout << "Правильно!!!\n";
+		}
+		else
+			cout << "Неправильно!!! Правильный перевод : " << it->second << endl;
 
-	//for (int i = 0; i <= n || in; ++i)
-	//{
-	//getline(in, num);
-	//getline(in, key);
-	//getline(in, equal);
-	//book.insert(make_pair(key, equal));
-	//}
+		if (right[rnum] == 3)
+		{
+			cout << "Вы выучили слово" << it->first << '(' << it->second << ')' << endl;
+			right[rnum] = 0; // неправильно //дичь какая-то
+			book.erase(it);
+			k--;
+		}
+		if (k == 0) f = false;
+	} while (f);
 
-	//for (map <string, string>::iterator it = book.begin(); it != book.end(); it++)
-	//{
-	//cout << "Переведите : " << it->first << ':';
-	//cin >> str;
-	//toLower(str);
-	//if (str == it->second)
-	//{
-	//	cout << "Правильно!!!(нажмите enter, чтобы продолжить...)";
-	//	cin.get();
-	//	cin.get();
-	//}
-	//else
-	//cout << " Неправильно!!! Правильный перевод : " << it->second << endl ;
-	//}
-
+	delete[] right;
 	system("pause");
 	return 0;
 }
